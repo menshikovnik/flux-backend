@@ -17,7 +17,7 @@ public class UserService {
 
         User user = userDao.findByUsername(username);
 
-        if (user != null) {
+        if (user.getUsername() != null) {
             throw new RuntimeException("Username is already taken");
         } else {
             user = new User();

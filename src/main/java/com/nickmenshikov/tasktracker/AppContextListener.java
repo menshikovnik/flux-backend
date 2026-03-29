@@ -2,14 +2,13 @@ package com.nickmenshikov.tasktracker;
 
 import com.nickmenshikov.tasktracker.dao.UserDao;
 import com.nickmenshikov.tasktracker.service.UserService;
-import com.nickmenshikov.tasktracker.util.DbUtil;
-import com.zaxxer.hikari.HikariDataSource;
+import com.nickmenshikov.tasktracker.util.DataSourceFactory;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
-import java.sql.SQLException;
+import javax.sql.DataSource;
 
 
 @WebListener
@@ -23,14 +22,7 @@ public class AppContextListener implements ServletContextListener {
         String user = servletContext.getInitParameter("jdbc.user");
         String password = servletContext.getInitParameter("jdbc.password");
 
-        DbUtil.init(url, user, password);
-
-        HikariDataSource dataSource;
-        try {
-        dataSource = DbUtil.getDataSource();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        DataSource dataSource = DataSourceFactory.create(url, user, password);
 
         UserDao userDao = new UserDao(dataSource);
         UserService userService = new UserService(userDao);
