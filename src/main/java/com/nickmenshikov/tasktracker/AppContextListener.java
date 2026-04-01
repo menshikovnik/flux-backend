@@ -1,6 +1,8 @@
 package com.nickmenshikov.tasktracker;
 
+import com.nickmenshikov.tasktracker.dao.TaskDao;
 import com.nickmenshikov.tasktracker.dao.UserDao;
+import com.nickmenshikov.tasktracker.service.TaskService;
 import com.nickmenshikov.tasktracker.service.UserService;
 import com.nickmenshikov.tasktracker.util.DataSourceFactory;
 import jakarta.servlet.ServletContext;
@@ -26,8 +28,11 @@ public class AppContextListener implements ServletContextListener {
 
         UserDao userDao = new UserDao(dataSource);
         UserService userService = new UserService(userDao);
+        TaskDao taskDao = new TaskDao(dataSource);
+        TaskService taskService = new TaskService(taskDao);
 
         servletContext.setAttribute("dataSource", dataSource);
         servletContext.setAttribute("userService", userService);
+        servletContext.setAttribute("taskService", taskService);
     }
 }

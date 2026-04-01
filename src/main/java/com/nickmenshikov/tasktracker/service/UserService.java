@@ -3,7 +3,8 @@ package com.nickmenshikov.tasktracker.service;
 import com.nickmenshikov.tasktracker.dao.UserDao;
 import com.nickmenshikov.tasktracker.model.User;
 import com.nickmenshikov.tasktracker.util.PasswordUtil;
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.time.Instant;
 
 public class UserService {
@@ -28,5 +29,16 @@ public class UserService {
         user.setCreatedAt(Instant.now());
 
         userDao.save(user);
+    }
+
+    public User login(String username, String password) {
+
+        User user = userDao.findByUsername(username);
+
+        if (!PasswordUtil.checkPassword(password, user.getPasswordHash())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return user;
     }
 }
