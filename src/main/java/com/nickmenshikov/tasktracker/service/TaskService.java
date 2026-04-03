@@ -6,6 +6,8 @@ import com.nickmenshikov.tasktracker.model.Status;
 import com.nickmenshikov.tasktracker.model.Task;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskService {
     private final TaskDao taskDao;
@@ -23,5 +25,9 @@ public class TaskService {
         task.setCreatorId(Long.parseLong(userId));
         task.setCreatedAt(Instant.now());
         taskDao.save(task);
+    }
+
+    public List<Task> getAllTasks(String creatorId) {
+        return taskDao.findAll(creatorId);
     }
 }

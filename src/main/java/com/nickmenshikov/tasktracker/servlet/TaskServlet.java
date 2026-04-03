@@ -32,28 +32,48 @@ public class TaskServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String path = req.getPathInfo();
+
+        switch (path) {
+            case "/getAll" -> handleGetAll(req, resp);
+        }
+    }
+
     private void handleCreate(HttpServletRequest req, HttpServletResponse resp) {
-            String title = req.getParameter("title");
-            String description = req.getParameter("description");
-            String priority = req.getParameter("priority");
-            String creatorId = req.getParameter("creatorId");
-            String status = req.getParameter("status");
+        String title = req.getParameter("title");
+        String description = req.getParameter("description");
+        String priority = req.getParameter("priority");
+        String creatorId = req.getParameter("creatorId");
+        String status = req.getParameter("status");
 
-            if (title == null || title.isBlank()) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                try {
-                    resp.getWriter().write("Title must not be empty");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return;
-            }
-
-            taskService.createTask(title, description,status, priority, creatorId);
+        if (title == null || title.isBlank()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             try {
-                resp.sendRedirect(req.getContextPath() + "/tasks");
+                resp.getWriter().write("Title must not be empty");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            return;
+        }
+
+        taskService.createTask(title, description, status, priority, creatorId);
+        try {
+            resp.sendRedirect(req.getContextPath() + "/tasks");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void handleGetAll(HttpServletRequest req, HttpServletResponse resp) {
+        String creatorId = req.getParameter("creatorId");
+
+        try {
+            taskService.getAllTasks(creatorId);
+            resp.setStatus(HttpServletResponse.SC_OK);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
