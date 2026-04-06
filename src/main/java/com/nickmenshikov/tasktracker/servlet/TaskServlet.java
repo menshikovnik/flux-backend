@@ -1,5 +1,6 @@
 package com.nickmenshikov.tasktracker.servlet;
 
+import com.nickmenshikov.tasktracker.model.User;
 import com.nickmenshikov.tasktracker.service.TaskService;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet("/api/tasks/*")
 public class TaskServlet extends HttpServlet {
@@ -24,7 +26,7 @@ public class TaskServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getPathInfo();
 
         switch (path) {
@@ -33,7 +35,7 @@ public class TaskServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getPathInfo();
 
         switch (path) {
@@ -67,11 +69,16 @@ public class TaskServlet extends HttpServlet {
     }
 
     private void handleGetAll(HttpServletRequest req, HttpServletResponse resp) {
-        String creatorId = req.getParameter("creatorId");
+        User user = Optional.ofNullable(req.getSession(false)).map(
+                session -> (User) req.getAttribute("user")
+        ).orElseThrow(
+                () -> new RuntimeException("Session or user not found")
+        );
 
         try {
-            taskService.getAllTasks(creatorId);
+            taskService.getAllTasks(user.getId().toString());
             resp.setStatus(HttpServletResponse.SC_OK);
+            //TODO
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -69,6 +69,7 @@ public class AuthServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("text/plain");
             response.getWriter().write("Пароли не совпадают");
+            return;
         }
 
         userService.register(username, password);

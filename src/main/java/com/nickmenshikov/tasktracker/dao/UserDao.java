@@ -4,6 +4,7 @@ import com.nickmenshikov.tasktracker.model.User;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.Optional;
 
 public class UserDao {
 
@@ -13,7 +14,7 @@ public class UserDao {
         this.dataSource = dataSource;
     }
 
-    public User findByUsername(String username){
+    public Optional<User> findByUsername(String username) {
 
         String sql = "SELECT id, username, password_hash, created_at FROM users WHERE username = ?";
 
@@ -22,15 +23,17 @@ public class UserDao {
 
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-            User user = new User();
             if (resultSet.next()) {
+                User user = new User();
                 user.setId(resultSet.getLong("id"));
                 user.setUsername(resultSet.getString("username"));
                 user.setPasswordHash(resultSet.getString("password_hash"));
                 user.setCreatedAt(resultSet.getTimestamp("created_at").toInstant());
+                return Optional.of(user);
             }
 
-            return user;
+            return Optional.empty();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

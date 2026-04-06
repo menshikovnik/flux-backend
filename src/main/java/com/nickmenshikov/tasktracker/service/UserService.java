@@ -1,6 +1,7 @@
 package com.nickmenshikov.tasktracker.service;
 
 import com.nickmenshikov.tasktracker.dao.UserDao;
+import com.nickmenshikov.tasktracker.exception.UserNotFoundException;
 import com.nickmenshikov.tasktracker.model.User;
 import com.nickmenshikov.tasktracker.util.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,24 +17,26 @@ public class UserService {
 
     public void register(String username, String password) {
 
-        User user = userDao.findByUsername(username);
+        userDao.findByUsername(username).ifPresent(
+                user -> {
+                    throw new RuntimeException("Username is already taken: " + username);
+                }
+        );
 
-        if (user.getUsername() != null) {
-            throw new RuntimeException("Username is already taken");
-        } else {
-            user = new User();
-        }
+        User newUser = new User();
 
-        user.setUsername(username);
-        user.setPasswordHash(PasswordUtil.hashPassword(password));
-        user.setCreatedAt(Instant.now());
+        newUser.setUsername(username);
+        newUser.setPasswordHash(PasswordUtil.hashPassword(password));
+        newUser.setCreatedAt(Instant.now());
 
-        userDao.save(user);
+        userDao.save(newUser);
     }
 
     public User login(String username, String password) {
 
-        User user = userDao.findByUsername(username);
+        User user = userDao.findByUsername(username).orElseThrow(
+                () -> new RuntimeException("User not found" + username)
+        );
 
         if (!PasswordUtil.checkPassword(password, user.getPasswordHash())) {
             throw new RuntimeException("Invalid password");
