@@ -18,9 +18,9 @@ public class AuthFilter implements Filter {
 
         String path = request.getRequestURI().substring(request.getContextPath().length());
 
-        boolean isLoginPath = path.equals("/login");
-        boolean isRegisterPath = path.equals("/register");
-        boolean isLogoutPath = path.equals("/logout");
+        boolean isLoginPath = path.equals("/api/auth/login");
+        boolean isRegisterPath = path.equals("/api/auth/register");
+        boolean isLogoutPath = path.equals("/api/auth/logout");
 
         boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
 

@@ -1,5 +1,8 @@
 package com.nickmenshikov.tasktracker.servlet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nickmenshikov.tasktracker.dto.LoginRequest;
+import com.nickmenshikov.tasktracker.dto.RegistrationRequest;
 import com.nickmenshikov.tasktracker.model.User;
 import com.nickmenshikov.tasktracker.service.UserService;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,15 +12,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.Map;
 
 @WebServlet("/api/auth/*")
 public class AuthServlet extends HttpServlet {
 
     private UserService userService;
+    private ObjectMapper mapper;
 
     @Override
     public void init() {
         userService = (UserService) getServletContext().getAttribute("userService");
+        mapper = (ObjectMapper) getServletContext().getAttribute("jacksonMapper");
     }
 
     @Override
@@ -35,43 +41,46 @@ public class AuthServlet extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        LoginRequest loginRequest = mapper.readValue(request.getReader(), LoginRequest.class);
 
-        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+        response.setContentType("application/json");
+
+        if (loginRequest.username() == null || loginRequest.username().isBlank()
+                || loginRequest.password() == null || loginRequest.password().isBlank()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("text/plain");
-            try {
-                response.getWriter().write("Username and password must not be empty");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Map<String, String> errorResponse = Map.of("error", "Username and password must not be empty");
+            mapper.writeValue(response.getWriter(), errorResponse);
             return;
         }
 
-        User user = userService.login(username, password);
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        User user = userService.login(loginRequest.username(), loginRequest.password());
 
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
-        try {
-            response.sendRedirect(request.getContextPath() + "/tasks");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        Map<String, String> successResponse = Map.of(
+                "status", "success",
+                "message", "User has been logged in: " + loginRequest.username()
+        );
+
+        mapper.writeValue(response.getWriter(), successResponse);
     }
 
     private void handleRegister(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String confirm = request.getParameter("confirmPassword");
 
-        if (!password.equals(confirm)) {
+        RegistrationRequest registrationRequest = mapper.readValue(request.getReader(), RegistrationRequest.class);
+
+        response.setContentType("application/json");
+
+        if (!registrationRequest.password().equals(registrationRequest.confirmPassword())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("text/plain");
-            response.getWriter().write("Пароли не совпадают");
+            var errorResponse = Map.of("error", "Passwords don't match");
+            mapper.writeValue(response.getWriter(), errorResponse);
             return;
         }
 
-        userService.register(username, password);
+        userService.register(registrationRequest.username(), registrationRequest.password());
     }
 }

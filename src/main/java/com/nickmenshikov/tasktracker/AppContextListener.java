@@ -1,5 +1,8 @@
 package com.nickmenshikov.tasktracker;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nickmenshikov.tasktracker.dao.TaskDao;
 import com.nickmenshikov.tasktracker.dao.UserDao;
 import com.nickmenshikov.tasktracker.service.TaskService;
@@ -20,6 +23,9 @@ public class AppContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext servletContext = sce.getServletContext();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         Dotenv dotenv = Dotenv.configure().load();
 
         String url = dotenv.get("JDBC_URL");
@@ -36,5 +42,6 @@ public class AppContextListener implements ServletContextListener {
         servletContext.setAttribute("dataSource", dataSource);
         servletContext.setAttribute("userService", userService);
         servletContext.setAttribute("taskService", taskService);
+        servletContext.setAttribute("jacksonMapper", mapper);
     }
 }
