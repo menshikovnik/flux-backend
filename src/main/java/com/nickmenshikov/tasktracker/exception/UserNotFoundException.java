@@ -1,7 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-public class UserNotFoundException extends RuntimeException {
+import jakarta.servlet.http.HttpServletResponse;
+
+public class UserNotFoundException extends AppException {
     public UserNotFoundException(String message) {
-        super(message);
+        super(HttpServletResponse.SC_UNAUTHORIZED, "user_not_found", message);
     }
 }

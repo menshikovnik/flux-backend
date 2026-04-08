@@ -1,6 +1,7 @@
 package com.nickmenshikov.tasktracker.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nickmenshikov.tasktracker.exception.BadRequestException;
 import com.nickmenshikov.tasktracker.dto.LoginRequest;
 import com.nickmenshikov.tasktracker.dto.RegistrationRequest;
 import com.nickmenshikov.tasktracker.model.User;
@@ -34,7 +35,7 @@ public class AuthServlet extends HttpServlet {
             case "/register" -> handleRegister(req, resp);
             case "/logout" -> {
                 req.getSession().invalidate();
-                resp.sendRedirect(req.getContextPath() + "/api/auth/login");
+                resp.setStatus(HttpServletResponse.SC_OK);
             }
             case null, default -> resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -47,15 +48,12 @@ public class AuthServlet extends HttpServlet {
 
         if (loginRequest.username() == null || loginRequest.username().isBlank()
                 || loginRequest.password() == null || loginRequest.password().isBlank()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Map<String, String> errorResponse = Map.of("error", "Username and password must not be empty");
-            mapper.writeValue(response.getWriter(), errorResponse);
-            return;
+            throw new BadRequestException("Username and password must not be empty");
         }
 
-        response.setStatus(HttpServletResponse.SC_OK);
-
         User user = userService.login(loginRequest.username(), loginRequest.password());
+
+        response.setStatus(HttpServletResponse.SC_OK);
 
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
@@ -74,13 +72,20 @@ public class AuthServlet extends HttpServlet {
 
         response.setContentType("application/json");
 
+        if (registrationRequest.password() == null || registrationRequest.password().isBlank()
+                || registrationRequest.username() == null || registrationRequest.username().isBlank()) {
+            throw new BadRequestException("Password or username is null or blank");
+        }
+
         if (!registrationRequest.password().equals(registrationRequest.confirmPassword())) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            var errorResponse = Map.of("error", "Passwords don't match");
-            mapper.writeValue(response.getWriter(), errorResponse);
-            return;
+            throw new BadRequestException("Passwords don't match");
         }
 
         userService.register(registrationRequest.username(), registrationRequest.password());
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        var successResponse = Map.of(
+                "success", "User has been registered"
+        );
+        mapper.writeValue(response.getWriter(), successResponse);
     }
 }

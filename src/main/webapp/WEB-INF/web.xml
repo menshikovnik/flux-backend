@@ -3,20 +3,4 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
-
-    <context-param>
-        <param-name>jdbc.url</param-name>
-        <param-value>jdbc:postgresql://localhost:5432/task_tracker_system_db</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>jdbc.user</param-name>
-        <param-value>nickmenshikov</param-value>
-    </context-param>
-
-    <context-param>
-        <param-name>jdbc.password</param-name>
-        <param-value>12345678</param-value>
-    </context-param>
-
 </web-app>

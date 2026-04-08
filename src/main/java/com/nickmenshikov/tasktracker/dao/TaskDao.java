@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class TaskDao {
 
@@ -48,21 +49,46 @@ public class TaskDao {
             ResultSet resultSet = ps.executeQuery();
 
             while (resultSet.next()) {
-                Task task = new Task();
-                task.setId(resultSet.getLong("id"));
-                task.setTitle(resultSet.getString("title"));
-                task.setDescription(resultSet.getString("description"));
-                task.setCreatedAt(resultSet.getTimestamp("created_at").toInstant());
-                task.setStatus(Status.valueOf(resultSet.getString("status")));
-                task.setPriority(Priority.valueOf(resultSet.getString("priority")));
-                task.setCreatorId(resultSet.getLong("user_id"));
-
-                tasks.add(task);
+                tasks.add(setTask(resultSet));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
         return tasks;
+    }
+
+    public Optional<Task> getById(Long id, Long userId) {
+        String sql = "SELECT * from tasks WHERE id = ? AND user_id = ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ps.setLong(2, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(setTask(rs));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
+    }
+
+    private Task setTask(ResultSet rs) throws SQLException {
+        Task task = new Task();
+        task.setId(rs.getLong("id"));
+        task.setTitle(rs.getString("title"));
+        task.setDescription(rs.getString("description"));
+        task.setCreatedAt(rs.getTimestamp("created_at").toInstant());
+        task.setStatus(Status.valueOf(rs.getString("status")));
+        task.setPriority(Priority.valueOf(rs.getString("priority")));
+        task.setCreatorId(rs.getLong("user_id"));
+
+        return task;
     }
 }

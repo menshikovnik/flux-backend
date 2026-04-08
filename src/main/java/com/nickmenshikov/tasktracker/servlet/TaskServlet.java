@@ -2,6 +2,8 @@ package com.nickmenshikov.tasktracker.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nickmenshikov.tasktracker.dto.CreateTaskRequest;
+import com.nickmenshikov.tasktracker.exception.BadRequestException;
+import com.nickmenshikov.tasktracker.exception.UnauthorizedException;
 import com.nickmenshikov.tasktracker.model.Task;
 import com.nickmenshikov.tasktracker.model.User;
 import com.nickmenshikov.tasktracker.service.TaskService;
@@ -41,6 +43,7 @@ public class TaskServlet extends HttpServlet {
 
         switch (path) {
             case "/create" -> handleCreate(req, resp);
+            default -> resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
@@ -50,23 +53,47 @@ public class TaskServlet extends HttpServlet {
 
         switch (path) {
             case "/getAll" -> handleGetAll(req, resp);
+            case "/get" -> handleGetById(req, resp);
+            default -> resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
+
+    private void handleGetById(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String idParam = req.getParameter("id");
+
+        User user = Optional.ofNullable(req.getSession(false)).map(
+                session -> (User) session.getAttribute("user")
+        ).orElseThrow(
+                () -> new UnauthorizedException("Authentication is required")
+        );
+
+        resp.setContentType("application/json");
+
+        if (idParam == null) {
+            throw new BadRequestException("Missing id parameter");
+        }
+
+        Long id = parseTaskId(idParam);
+        resp.setStatus(HttpServletResponse.SC_OK);
+        mapper.writeValue(resp.getWriter(), taskService.getTaskById(id, user.getId()));
     }
 
     private void handleCreate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         CreateTaskRequest createTaskRequest = mapper.readValue(req.getReader(), CreateTaskRequest.class);
         resp.setContentType("application/json");
 
+        User user = Optional.ofNullable(req.getSession(false)).map(
+                session -> (User) session.getAttribute("user")
+        ).orElseThrow(
+                () -> new UnauthorizedException("Authentication is required")
+        );
+
         if (createTaskRequest.title() == null || createTaskRequest.title().isBlank()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            mapper.writeValue(resp.getWriter(), Map.of("error", "Title must not be empty"));
-            return;
+            throw new BadRequestException("Title must not be empty");
         }
 
-        if (createTaskRequest.priority() == null || createTaskRequest.status() == null || createTaskRequest.creatorId() == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            mapper.writeValue(resp.getWriter(), Map.of("error", "Priority, status and creatorId must not be empty"));
-            return;
+        if (createTaskRequest.priority() == null || createTaskRequest.status() == null) {
+            throw new BadRequestException("Priority and status must not be empty");
         }
 
         taskService.createTask(
@@ -74,7 +101,7 @@ public class TaskServlet extends HttpServlet {
                 createTaskRequest.description(),
                 createTaskRequest.status().name(),
                 createTaskRequest.priority().name(),
-                createTaskRequest.creatorId().toString()
+                user.getId()
         );
 
         resp.setStatus(HttpServletResponse.SC_CREATED);
@@ -85,23 +112,21 @@ public class TaskServlet extends HttpServlet {
         User user = Optional.ofNullable(req.getSession(false)).map(
                 session -> (User) session.getAttribute("user")
         ).orElseThrow(
-                () -> new RuntimeException("Session or user not found")
+                () -> new UnauthorizedException("Authentication is required")
         );
 
         resp.setContentType("application/json");
 
+        List<Task> tasks = taskService.getAllTasks(user.getId().toString());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        mapper.writeValue(resp.getWriter(), tasks);
+    }
+
+    private Long parseTaskId(String idParam) {
         try {
-            List<Task> tasks = taskService.getAllTasks(user.getId().toString());
-            resp.setStatus(HttpServletResponse.SC_OK);
-            mapper.writeValue(resp.getWriter(), tasks);
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            Map<String, String> errorData = Map.of(
-                    "error", "Something went wrong",
-                    "details", e.getMessage() != null ? e.getMessage() : "Unknown error"
-            );
-            mapper.writeValue(resp.getWriter(), errorData);
-            resp.getWriter().flush();
+            return Long.parseLong(idParam);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Task id must be a number");
         }
     }
 }
