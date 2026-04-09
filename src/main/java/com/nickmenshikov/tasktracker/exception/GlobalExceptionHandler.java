@@ -26,6 +26,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
     }
 
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<?> handleAppException(AppException exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+                .body(Map.of(
+                        "error", exception.getErrorCode(),
+                        "message", exception.getMessage()
+                ));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleInternalServerError(RuntimeException exception) {
         return ResponseEntity.internalServerError().body(Map.of("error", exception.getMessage()));
