@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class BadRequestException extends AppException {
     public BadRequestException(String message) {
-        super(HttpServletResponse.SC_BAD_REQUEST, "bad_request", message);
+        super(HttpStatus.BAD_REQUEST, "bad_request", message);
     }
 }

@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class InvalidPasswordException extends AppException {
     public InvalidPasswordException(String message) {
-        super(HttpServletResponse.SC_UNAUTHORIZED, "invalid_password", message);
+        super(HttpStatus.UNAUTHORIZED, "invalid_password", message);
     }
 }

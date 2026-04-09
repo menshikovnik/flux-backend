@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class UserNotFoundException extends AppException {
     public UserNotFoundException(String message) {
-        super(HttpServletResponse.SC_UNAUTHORIZED, "user_not_found", message);
+        super(HttpStatus.UNAUTHORIZED, "user_not_found", message);
     }
 }

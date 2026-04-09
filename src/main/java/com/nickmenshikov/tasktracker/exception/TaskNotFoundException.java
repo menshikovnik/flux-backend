@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class TaskNotFoundException extends AppException {
     public TaskNotFoundException(String message) {
-        super(HttpServletResponse.SC_NOT_FOUND, "task_not_found", message);
+        super(HttpStatus.NOT_FOUND, "task_not_found", message);
     }
 }

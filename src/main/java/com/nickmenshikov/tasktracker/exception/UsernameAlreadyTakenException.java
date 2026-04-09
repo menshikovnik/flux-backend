@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class UsernameAlreadyTakenException extends AppException {
     public UsernameAlreadyTakenException(String message) {
-        super(HttpServletResponse.SC_CONFLICT, "username_already_taken", message);
+        super(HttpStatus.CONFLICT, "username_already_taken", message);
     }
 }

@@ -1,20 +1,16 @@
 package com.nickmenshikov.tasktracker.exception;
 
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
 public abstract class AppException extends RuntimeException {
-    private final int statusCode;
+    private final HttpStatus status;
     private final String errorCode;
 
-    protected AppException(int statusCode, String errorCode, String message) {
+    protected AppException(HttpStatus status, String errorCode, String message) {
         super(message);
-        this.statusCode = statusCode;
+        this.status = status;
         this.errorCode = errorCode;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public String getErrorCode() {
-        return errorCode;
     }
 }

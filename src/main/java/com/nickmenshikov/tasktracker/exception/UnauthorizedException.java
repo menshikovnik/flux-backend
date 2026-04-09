@@ -1,9 +1,9 @@
 package com.nickmenshikov.tasktracker.exception;
 
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 public class UnauthorizedException extends AppException {
     public UnauthorizedException(String message) {
-        super(HttpServletResponse.SC_UNAUTHORIZED, "unauthorized", message);
+        super(HttpStatus.UNAUTHORIZED, "unauthorized", message);
     }
 }

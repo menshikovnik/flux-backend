@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> handleAppException(AppException exception) {
-        return ResponseEntity.status(exception.getStatusCode())
+        return ResponseEntity.status(exception.getStatus())
                 .body(Map.of(
                         "error", exception.getErrorCode(),
                         "message", exception.getMessage()
