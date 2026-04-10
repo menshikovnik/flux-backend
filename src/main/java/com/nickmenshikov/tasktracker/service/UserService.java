@@ -1,27 +1,29 @@
 package com.nickmenshikov.tasktracker.service;
 
-import com.nickmenshikov.tasktracker.dao.UserDao;
 import com.nickmenshikov.tasktracker.exception.BadRequestException;
 import com.nickmenshikov.tasktracker.exception.UserNotFoundException;
 import com.nickmenshikov.tasktracker.exception.UsernameAlreadyTakenException;
 import com.nickmenshikov.tasktracker.exception.InvalidPasswordException;
 import com.nickmenshikov.tasktracker.model.User;
+import com.nickmenshikov.tasktracker.repository.UserRepository;
 import com.nickmenshikov.tasktracker.util.PasswordUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserDao userDao;
 
-    public UserService(UserDao userDao) {
-        this.userDao = userDao;
-    }
+    private final UserRepository userRepository;
 
+
+    @Transactional
     public User register(String username, String password, String confirmPassword) {
 
-        userDao.findByUsername(username).ifPresent(
+        userRepository.findUserByUsername(username).ifPresent(
                 user -> {
                     throw new UsernameAlreadyTakenException("Username is already taken: " + username);
                 }
@@ -37,12 +39,13 @@ public class UserService {
         newUser.setPasswordHash(PasswordUtil.hashPassword(password));
         newUser.setCreatedAt(Instant.now());
 
-        return userDao.save(newUser);
+        return userRepository.save(newUser);
     }
 
+    @Transactional(readOnly = true)
     public User login(String username, String password) {
 
-        User user = userDao.findByUsername(username).orElseThrow(
+        User user = userRepository.findUserByUsername(username).orElseThrow(
                 () -> new UserNotFoundException("User not found " + username)
         );
 

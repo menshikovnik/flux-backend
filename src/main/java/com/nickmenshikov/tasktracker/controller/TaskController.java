@@ -10,11 +10,13 @@ import com.nickmenshikov.tasktracker.service.TaskService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -31,14 +33,13 @@ public class TaskController {
     }
 
     @GetMapping(version = "1.0")
-    public ResponseEntity<List<Task>> getAllTasks(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+    public ResponseEntity<Page<Task>> getAllTasks(
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) Priority priority,
+            @PageableDefault(size = 20) Pageable pageable,
             HttpSession session) {
         User user = (User) session.getAttribute("user");
-        List<Task> tasks = taskService.getAllTasks(user.getId(), page, size, status, priority);
+        Page<Task> tasks = taskService.getAllTasks(user.getId(), pageable, status, priority);
         return ResponseEntity.ok(tasks);
     }
 
