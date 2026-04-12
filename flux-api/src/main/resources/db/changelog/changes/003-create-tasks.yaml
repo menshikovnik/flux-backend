@@ -1,0 +1,103 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-tasks
+      author: nickmenshikov
+      changes:
+        - createTable:
+            tableName: tasks
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_tasks_user
+                    references: users(id)
+                    deleteCascade: true
+              - column:
+                  name: project_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_tasks_project
+                    references: projects(id)
+              - column:
+                  name: parent_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_tasks_parent
+                    references: tasks(id)
+              - column:
+                  name: title
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: OPEN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: priority
+                  type: VARCHAR(10)
+                  defaultValue: MEDIUM
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_date
+                  type: TIMESTAMPTZ
+              - column:
+                  name: completed_at
+                  type: TIMESTAMPTZ
+              - column:
+                  name: sort_order
+                  type: INTEGER
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: tasks
+            indexName: idx_tasks_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: tasks
+            indexName: idx_tasks_project_id
+            columns:
+              - column:
+                  name: project_id
+        - createIndex:
+            tableName: tasks
+            indexName: idx_tasks_parent_id
+            columns:
+              - column:
+                  name: parent_id
+        - createIndex:
+            tableName: tasks
+            indexName: idx_tasks_due_date
+            columns:
+              - column:
+                  name: due_date
