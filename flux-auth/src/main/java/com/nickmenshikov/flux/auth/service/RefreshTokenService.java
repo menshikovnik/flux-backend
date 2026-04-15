@@ -34,11 +34,11 @@ public class RefreshTokenService {
         );
 
         if (existing.isExpired()) {
-            refreshTokenRepository.delete(existing);
+            refreshTokenRepository.deleteByToken(existing.getToken());
             throw new UnauthorizedException("Refresh token is expired");
         }
 
-        refreshTokenRepository.delete(existing);
+        refreshTokenRepository.deleteByToken(existing.getToken());
 
         return getRefreshToken(existing.getUser());
     }

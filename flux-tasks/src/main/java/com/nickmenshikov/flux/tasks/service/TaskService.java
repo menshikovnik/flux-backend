@@ -2,11 +2,10 @@ package com.nickmenshikov.flux.tasks.service;
 
 import com.nickmenshikov.flux.core.dto.CreateTaskRequest;
 import com.nickmenshikov.flux.core.dto.UpdateTaskRequest;
+import com.nickmenshikov.flux.core.exception.ProjectNotFoundException;
 import com.nickmenshikov.flux.core.exception.TaskNotFoundException;
-import com.nickmenshikov.flux.core.model.Priority;
-import com.nickmenshikov.flux.core.model.Status;
-import com.nickmenshikov.flux.core.model.Task;
-import com.nickmenshikov.flux.core.model.User;
+import com.nickmenshikov.flux.core.model.*;
+import com.nickmenshikov.flux.projects.repository.ProjectRepository;
 import com.nickmenshikov.flux.tasks.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +20,7 @@ import java.time.Instant;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
 
     @Transactional
@@ -32,12 +32,19 @@ public class TaskService {
         task.setPriority(request.priority());
         task.setCreator(user);
         task.setCreatedAt(Instant.now());
+
+        if (request.projectId() != null) {
+            Project project = projectRepository.findProjectByIdAndUser(request.projectId(), user)
+                    .orElseThrow(() -> new ProjectNotFoundException("Project not found: " + request.projectId()));
+            task.setProject(project);
+        }
+
         return taskRepository.save(task);
     }
 
     @Transactional(readOnly = true)
-    public Page<Task> getAllTasks(User creator, Pageable pageable, Status status, Priority priority) {
-        return taskRepository.findAllFiltered(creator, status, priority, pageable);
+    public Page<Task> getAllTasks(User creator, Pageable pageable, Status status, Priority priority, Long projectId) {
+        return taskRepository.findAllFiltered(creator, status, priority, pageable, projectId);
     }
 
     @Transactional(readOnly = true)

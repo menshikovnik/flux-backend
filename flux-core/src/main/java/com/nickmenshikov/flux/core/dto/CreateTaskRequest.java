@@ -15,6 +15,8 @@ public record CreateTaskRequest(
         Priority priority,
 
         @NotNull(message = "Status must not be empty")
-        Status status
+        Status status,
+
+        Long projectId
 ) {
 }

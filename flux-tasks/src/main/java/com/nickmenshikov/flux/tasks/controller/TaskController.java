@@ -36,9 +36,10 @@ public class TaskController {
     public ResponseEntity<Page<TaskResponse>> getAllTasks(
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) Long projectId,
             @PageableDefault(size = 20) Pageable pageable,
             @AuthenticationPrincipal FluxUserDetails userDetails) {
-        return ResponseEntity.ok(taskService.getAllTasks(userDetails.getUser(), pageable, status, priority).map(TaskResponse::from));
+        return ResponseEntity.ok(taskService.getAllTasks(userDetails.getUser(), pageable, status, priority, projectId).map(TaskResponse::from));
     }
 
     @GetMapping(value = "/{id}", version = "1.0")

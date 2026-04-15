@@ -17,14 +17,18 @@ import java.util.Optional;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
     Optional<Task> findTaskByIdAndCreator(Long id, User creator);
+
     void deleteTaskById(Long id);
 
     @Query("SELECT t FROM Task t WHERE t.creator = :creator " +
             "AND (:status IS NULL OR t.status = :status) " +
-            "AND (:priority IS NULL OR t.priority = :priority)")
+            "AND (:priority IS NULL OR t.priority = :priority)" +
+            "AND (:projectId IS NULL OR t.project.id = :projectId)")
     Page<Task> findAllFiltered(
             @Param("creator") User creator,
             @Param("status") Status status,
             @Param("priority") Priority priority,
-            Pageable pageable);
+            Pageable pageable,
+            @Param("projectId") Long projectId
+    );
 }

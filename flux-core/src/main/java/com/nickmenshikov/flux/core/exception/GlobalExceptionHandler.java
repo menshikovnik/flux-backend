@@ -30,6 +30,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> handleAppException(AppException exception) {
+        log.error("App exception", exception);
         return ResponseEntity.status(exception.getStatus())
                 .body(Map.of(
                         "error", exception.getErrorCode(),
