@@ -28,6 +28,7 @@
         <module>flux-time</module>
         <module>flux-api</module>
         <module>flux-search</module>
+        <module>flux-contracts</module>
     </modules>
 
 

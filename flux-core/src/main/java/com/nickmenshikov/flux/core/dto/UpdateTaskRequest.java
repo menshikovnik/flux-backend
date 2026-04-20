@@ -14,6 +14,6 @@ public record UpdateTaskRequest(String title, String description, Priority prior
         Optional.ofNullable(description).ifPresent(task::setDescription);
         Optional.ofNullable(priority).ifPresent(task::setPriority);
         Optional.ofNullable(status).ifPresent(task::setStatus);
-        Optional.ofNullable(dueDate).ifPresent(task::setDueDate);
+        task.setDueDate(dueDate);
     }
 }
